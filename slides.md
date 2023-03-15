@@ -487,7 +487,6 @@ Debugging with breakpoints will be for another time since it's IDE specific and 
 ## Lets make the program panic
 
 Read to an index out of bound or unwrap an error and see what happens.
-
 ``` rust
 // We don't have an actual main function
 #[no_main]
@@ -507,4 +506,20 @@ fn main() -> ! {
     cortex_m::asm::bkpt();
 }
 ```
-Try it again, but this time by using the `unwrap()` function on an `Option` or `Error` result. Why is the unwrap discouraged in library code?
+ --- 
+## Unwrap
+Try it again, but this time by using the `unwrap()` function on an `Option` or `Error` result. Why is the unwrap discouraged in library code? 
+``` rust
+fn none() -> Option<u32> {
+    None
+}
+fn some() -> Option<u32> {
+    Some(42)
+}
+fn err() -> Error<u32, ()>{
+    Err(())
+}
+fn ok() -> Error<u32, ()>{
+    Ok(42)
+}
+```
