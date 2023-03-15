@@ -1,0 +1,25 @@
+[package]
+name = "nrf52840dk-hello"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+# Cortex m register and peripheral access
+cortex-m = { version = "0.7.7", features = ["critical-section-single-core"]}
+
+# Cortex m runtime  (what happens before the main fucntion)
+cortex-m-rt = "0.7.3"
+
+# Logging library
+defmt = "0.3"
+
+# We log via rtt (we could log via uart, usb, to memory, etc)
+defmt-rtt = "0.3"
+
+# Hal for the nrf52840, use spi, i2c, etc.
+nrf52840-hal = "0.16.0"
+
+# Panic behavior, use defmt
+panic-probe = { version = "0.3", features = ["print-defmt"] } 
