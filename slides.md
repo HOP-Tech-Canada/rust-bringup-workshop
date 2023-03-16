@@ -228,7 +228,7 @@ fn borrow_mut_vec(vec: &mut Vec) {}
 // We own it, it will be destroyed at the end of the function, no garbage collection
 fn own_vec(vec: Vec) {}
 ```
-The next example contains commentend lines of code, try to uncomment them and understand why it cannot compile.
+The next example contains commented lines of code, try to uncomment them and understand why it cannot compile.
 
 ---
 ## Basic lifetime example
