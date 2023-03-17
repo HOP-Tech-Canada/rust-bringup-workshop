@@ -1,0 +1,12 @@
+# For all arm targets let use probe-run
+[target.'cfg(all(target_arch = "arm", target_os = "none"))']
+runner = "probe-run --chip nRF52840_xxAA"
+
+# Default build target will be architecture of the nrf52840
+# We can override it using `carog run --target=XXXX` if we want to
+[build]
+target = "thumbv7em-none-eabihf" # Cortex-M4F and Cortex-M7F (with FPU)
+
+# We want the info level for logging (defaults to Warn)
+[env]
+DEFMT_LOG = "info"

@@ -6,6 +6,36 @@ marp: true
 ---
 # Core concepts
 ---
+##  Core concepts: Basic syntax
+```rust
+// Declare a variable
+let x = 42;
+// Can specify type, optional most of the time
+let x: u8 = 42;
+// Create an array of length 24 with values of 42
+let arr = [24; 42];
+// Iterators
+for val in arr {
+    assert_eq(val, 42);
+}
+// Get a reference to the sub array values from index 0 to 11.
+let slice = arr[0..12];
+// Get a reference to the sub array values from index 0 to 12.
+let slice = arr[0..=12];
+// Infinite loop
+loop{
+    do_stuff();
+}
+while is_true(){
+    do_stuff();
+}
+// Function declaration
+fn val() {
+    42 // No need of return keyword on "last line"
+    // return 42;
+}
+```
+---
 ##  Core concepts: Enums
 ```rust
 /// AND relation
@@ -14,7 +44,7 @@ struct PhoneNumber {
     country_code: String,
     /// Regional code, (819) in sherby
     regional_code: String,
-    /// The actual number 562-5022
+    /// The actual number 422-4422
     number: String,
 }
 
@@ -29,7 +59,7 @@ pub enum ContactMethod {
 }
 ```
 ---
-## Core concepts: Option and Result pattern
+## Core concepts: Templates, Option and Result pattern
 ```rust
 /// We maybe have something
 enum Option<T> {
@@ -37,7 +67,7 @@ enum Option<T> {
     None
 }
 
-/// We have a result, or an error
+/// We have something valid, or an error
 enum Result<T, E> {
     Ok(T),
     Err(E)
@@ -58,19 +88,38 @@ fn get_first_negative(values: &[i32]) -> Option<i32>{
 
 /// We have a result, or an error
 fn get_value_from_file(file: File) -> Result<Item, ItemError> {
-    let result = file.get();
+    let result = file.read();
     match result {
         Ok(val) => Ok(val.convert()),
         Err(e) => Err(e),
     }
 }
 ```
+
+---
+## Core concepts: Pattern matching
+```rust
+fn pattern_matching_match(val: Result<Option<Item>, ItemError>) -> SomethingElse {
+    match val {
+        Ok(Some(item)) => item.to_something_else(),
+        _ => SomethingElse::default()
+    }
+}
+
+fn pattern_matching_if(val: Result<Option<Item>, ItemError>) -> SomethingElse {
+    if let Ok(Some(item)) = val (
+        return item.to_something_else();
+    )
+    SomethingElse::default()
+}
+```
+
 ---
 ## Core concepts: Map and "?" operator
 ```rust
 /// We have a result, or an error
 fn get_value_from_file(file: File) -> Result<Item, ItemError> {
-    let result = file.get();
+    let result = file.read();
     match result {
         Ok(val) => Ok(val.convert()),
         Err(e) => Err(e),
@@ -79,18 +128,19 @@ fn get_value_from_file(file: File) -> Result<Item, ItemError> {
 /// We can rewrite it as
 fn get_value_from_file(file: File) -> Result<Item, ItemError> {
     // Note the question mark here
-    let result = file.get().map(|v| v.convert());
+    let result = file.read().map(|v| v.convert());
     result 
 }
 /// Or sometimes easier to read
 fn get_value_from_file(file: File) -> Result<Item, ItemError> {
     // Note the question mark here, if it's an error, we return the error, 
     // if not we continue with the value
-    let result = file.get()?;
+    let result = file.read()?;
     let val = result.convert();
     Ok(val)
 }
 ```
+---
 # Setup a new project
 - Introduce the user to the cargo cli
     - new
@@ -210,6 +260,13 @@ fn main() {
     print_total(&other);
 }
 ```
+
+---
+## Trait composition
+How could we implement the `DoubleTotal` trait?
+How can we use it in our code?
+
+---
 ## Lifetime project
 Create a new project called `lifetime` using `cargo new --bin lifetime`.
 We will explore the concept of lifetime and the borrow checker. 
@@ -521,5 +578,142 @@ fn err() -> Error<u32, ()>{
 }
 fn ok() -> Error<u32, ()>{
     Ok(42)
+}
+```
+---
+
+# Async
+
+---
+## Naive polling
+```rust
+trait Future {
+    type Output;
+    fn poll(&mut self, wake: fn()) -> Poll<Self::Output>;
+}
+
+enum Poll<T>{
+    Pending,
+    Ready(T)
+}
+
+fn function(){
+    let fut1 = create_fut1();
+    let fut2 = create_fut1();
+    loop {
+        match fut1.poll() {
+            Poll::Pending => (),
+            Poll::Ready(val) => do_suff_with_val(val),
+        }
+        match fut2.poll() {
+            Poll::Pending => (),
+            Poll::Ready(val) => do_suff_with_val(val),
+        }
+    }
+
+}
+
+```
+
+---
+## Diagram
+![Mermaid diagram](diagram.png)
+
+---
+
+# Async embedded project
+Create a new project called `embassy-usage` using `cargo new --bin embasy-usage`. Make sure your dk is plugged and working properly. 
+
+Copy the `memory.x`, `build.rs` and `.cargo/config.toml` from the previous project
+
+---
+## Dependencies
+```toml
+defmt = "0.3.0"
+defmt-rtt = "0.3.0"
+panic-probe = { version = "0.3.0", features = ["print-defmt"] }
+cortex-m = { version = "0.7.7", features = ["critical-section-single-core"]}
+cortex-m-rt = "0.7.3"
+
+# Executes the future
+embassy-executor = { version = "0.1.0", git = "https://github.com/embassy-rs/embassy",  features = ["defmt", "integrated-timers", "nightly"] }
+# Replaces nrf52840-hal for async support for spi/etc
+embassy-nrf = { version = "0.1.0", git = "https://github.com/embassy-rs/embassy", features = ["defmt", "nrf52840", "time-driver-rtc1", "gpiote", "unstable-pac", "time", "nightly"] }
+# Helpers for time
+embassy-time = { version = "0.1.0", git = "https://github.com/embassy-rs/embassy", features = ["defmt", "defmt-timestamp-uptime"] }
+# Helpers for future
+embassy-futures = { version = "0.1.0", git = "https://github.com/embassy-rs/embassy" }
+```
+
+---
+## Async button press
+```rust
+#![no_std]
+#![no_main]
+#![feature(type_alias_impl_trait)]
+
+use embassy_executor::Spawner;
+use embassy_nrf::gpio::{Level, Output, OutputDrive, Input, Pull};
+use {defmt_rtt as _, panic_probe as _};
+
+#[embassy_executor::main]
+async fn main(_spawner: Spawner) {
+    let p = embassy_nrf::init(Default::default());
+    let mut led1 = Output::new(p.P0_13, Level::High, OutputDrive::Standard);
+    let mut button1 = Input::new(p.P0_11, Pull::Up);
+
+    defmt::info!("Starting loop");
+    loop {
+        button1.wait_for_any_edge().await;
+        let level = button1.get_level();
+        defmt::info!("Setting to level {:?}", level);
+        led1.set_level(level);
+    }
+}
+```
+
+---
+
+## Async concurrency
+```rust
+#![no_std]
+#![no_main]
+#![feature(type_alias_impl_trait)]
+
+use embassy_executor::Spawner;
+use embassy_futures::select::{select, Either};
+use embassy_nrf::gpio::{Level, Output, OutputDrive, Input, Pull, Pin};
+use {defmt_rtt as _, panic_probe as _};
+
+async fn button_led<B: Pin, L: Pin>(button: &mut Input<'_, B>, led: &mut Output<'_, L>) -> Level {
+    button.wait_for_any_edge().await;
+    let level = button.get_level();
+    led.set_level(level);
+    level
+}
+
+#[embassy_executor::main]
+async fn main(_spawner: Spawner) {
+    let p = embassy_nrf::init(Default::default());
+    let mut led1 = Output::new(p.P0_13, Level::High, OutputDrive::Standard);
+    let mut led2 = Output::new(p.P0_14, Level::High, OutputDrive::Standard);
+    let mut button1 = Input::new(p.P0_11, Pull::Up);
+    let mut button2 = Input::new(p.P0_12, Pull::Up);
+
+    defmt::info!("Starting loop");
+    loop {
+        // Note that we don't await here
+        let fut1 = button_led(&mut button1, &mut led1);
+        let fut2 = button_led(&mut button2, &mut led2);
+
+        match select(fut1, fut2).await {
+            Either::First(level) => {
+                defmt::info!("Setting led1 to level {:?}", level);
+            },
+            Either::Second(level) => {
+                defmt::info!("Setting led2 to level {:?}", level);
+            }
+        }
+    }
 }
 ```
