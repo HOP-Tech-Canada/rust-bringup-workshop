@@ -706,6 +706,7 @@ async fn main(_spawner: Spawner) {
         let fut1 = button_led(&mut button1, &mut led1);
         let fut2 = button_led(&mut button2, &mut led2);
 
+        // We select the first futre that complete and do something with the result
         match select(fut1, fut2).await {
             Either::First(level) => {
                 defmt::info!("Setting led1 to level {:?}", level);
