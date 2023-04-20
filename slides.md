@@ -30,7 +30,7 @@ while is_true(){
     do_stuff();
 }
 // Function declaration
-fn val() {
+fn val() -> u8 {
     42 // No need of return keyword on "last line"
     // return 42;
 }
@@ -227,6 +227,17 @@ Create a new project called `total` using `cargo new --bin total`.
 trait  Total{
     fn total(&self) -> u32;
 }
+
+trait DoubleTotal {
+    fn double_total(&self) -> u32;
+}
+
+impl<T> DoubleTotal for T where T: Total {
+    fn double_total(&self) -> u32 {
+        self.total*2;
+    }
+}
+
 /// We take a generic type that implements the `Total` trait
 fn print_total<T: Total>(val: &T) {
     println!("Total is: {}", val.total());
@@ -235,7 +246,12 @@ fn print_total<T: Total>(val: &T) {
 struct SomeStruct{
     val: u32,
     other: u32,
-} 
+}
+impl SomeStruct {
+    fn some_fn(&self) -> u32 {
+        self.total()
+    }
+}
 impl Total for SomeStruct {
     fn total(&self) -> u32 {
         self.val + self.other
@@ -256,6 +272,8 @@ fn main() {
     };
     let other = AnotherStruct(42);
     // Note that they have different types!
+    some.total();
+    other.total();
     print_total(&some);
     print_total(&other);
 }
